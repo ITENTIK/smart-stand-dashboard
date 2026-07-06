@@ -1,4 +1,7 @@
-// ===== FIREBASE =====
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, onValue } from "firebase/database";
+
+// ===== КОНФИГ FIREBASE =====
 const firebaseConfig = {
     apiKey: "AIzaSyDMfmMhEyFUiQ8oIecbDkJfJxcYf9z00MM",
     authDomain: "smart-stand-7e599.firebaseapp.com",
@@ -9,8 +12,8 @@ const firebaseConfig = {
     appId: "1:600827325868:web:572b46cb91234c35ad1e09"
 };
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 const dataPath = 'sensor_data';
 
 // ===== ЭЛЕМЕНТЫ =====
@@ -57,7 +60,7 @@ const chart = new Chart(ctx, {
                 backgroundColor: 'rgba(42,157,143,0.1)',
                 fill: true,
                 tension: 0.3,
-                yAxisID: 'yWeight'  // ← привязываем к левой оси
+                yAxisID: 'yWeight'
             },
             {
                 label: 'Температура (°C)',
@@ -66,7 +69,7 @@ const chart = new Chart(ctx, {
                 backgroundColor: 'rgba(231,111,81,0.1)',
                 fill: true,
                 tension: 0.3,
-                yAxisID: 'yTemp'   // ← привязываем к правой оси
+                yAxisID: 'yTemp'
             }
         ]
     },
@@ -80,15 +83,14 @@ const chart = new Chart(ctx, {
                 type: 'linear',
                 position: 'left',
                 beginAtZero: true,
-                title: { display: true, text: 'Вес (г)' },
-                grid: { color: 'rgba(42,157,143,0.2)' }
+                title: { display: true, text: 'Вес (г)' }
             },
             yTemp: {
                 type: 'linear',
                 position: 'right',
                 beginAtZero: true,
                 title: { display: true, text: 'Температура (°C)' },
-                grid: { drawOnChartArea: false },  // ← убираем сетку, чтобы не мешала
+                grid: { drawOnChartArea: false },
                 min: 0,
                 max: 50
             }
@@ -115,7 +117,7 @@ function showToast(msg) {
 }
 
 // ===== ЧТЕНИЕ ДАННЫХ =====
-firebase.database().ref(dataPath).on('value', (snapshot) => {
+onValue(ref(database, dataPath), (snapshot) => {
     const data = snapshot.val();
     if (!data) return;
 
@@ -166,7 +168,7 @@ firebase.database().ref(dataPath).on('value', (snapshot) => {
         </li>`
     ).join('') || '<li style="color:#aaa;">Нет данных</li>';
 
-    // ===== ОБНОВЛЯЕМ ГРАФИК =====
+    // ===== ГРАФИК =====
     chart.data.labels = history.map(h => h.time);
     chart.data.datasets[0].data = history.map(h => h.weight);
     chart.data.datasets[1].data = history.map(h => h.temp);
