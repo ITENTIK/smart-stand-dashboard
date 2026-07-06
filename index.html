@@ -6,217 +6,35 @@
     <title>☕ Умная подставка</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: background 0.3s, color 0.3s, border-color 0.3s;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            background: #f5f5f5;
-            color: #1f1a16;
-        }
-
-        body.dark {
-            background: #1a1a1e;
-            color: #e0dcd8;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        h1 {
-            font-size: 26px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .theme-toggle {
-            background: #ddd;
-            border: none;
-            border-radius: 40px;
-            padding: 8px 18px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-
-        body.dark .theme-toggle {
-            background: #333;
-            color: #eee;
-        }
-
-        .theme-toggle:hover {
-            opacity: 0.8;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: white;
-            padding: 16px 18px;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        body.dark .card {
-            background: #2a2a2e;
-            border-color: #3a3a3e;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .card .label {
-            font-size: 13px;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        body.dark .card .label {
-            color: #aaa;
-        }
-
-        .card .value {
-            font-size: 22px;
-            font-weight: 700;
-            margin-top: 4px;
-        }
-
-        .status-ok {
-            color: #2a9d8f;
-        }
-        .status-no {
-            color: #e76f51;
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            margin-bottom: 20px;
-        }
-
-        body.dark .chart-container {
-            background: #2a2a2e;
-            border-color: #3a3a3e;
-        }
-
-        .history {
-            background: white;
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        body.dark .history {
-            background: #2a2a2e;
-            border-color: #3a3a3e;
-        }
-
-        .history h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #555;
-        }
-
-        body.dark .history h3 {
-            color: #aaa;
-        }
-
-        .history ul {
-            list-style: none;
-            padding: 0;
-            max-height: 180px;
-            overflow-y: auto;
-            font-size: 14px;
-        }
-
-        .history ul li {
-            padding: 4px 0;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        body.dark .history ul li {
-            border-bottom-color: #3a3a3e;
-        }
-
-        .history ul li:last-child {
-            border-bottom: none;
-        }
-
-        .history .time {
-            color: #999;
-            font-size: 12px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #e76f51;
-            color: #fff;
-            padding: 14px 24px;
-            border-radius: 60px;
-            font-weight: 600;
-            box-shadow: 0 8px 24px rgba(231, 111, 81, 0.4);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: 0.4s ease;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        @media (max-width: 500px) {
-            .cards {
-                grid-template-columns: 1fr 1fr;
-            }
-            .card .value {
-                font-size: 18px;
-            }
-            h1 {
-                font-size: 20px;
-            }
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 20px;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; transition: background 0.3s, color 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; padding:20px; max-width:800px; margin:0 auto; background:#f5f5f5; color:#1f1a16; }
+        body.dark { background:#1a1a1e; color:#e0dcd8; }
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+        h1 { font-size:26px; font-weight:700; }
+        .theme-toggle { background:#ddd; border:none; border-radius:40px; padding:8px 18px; font-size:16px; cursor:pointer; font-weight:600; }
+        body.dark .theme-toggle { background:#333; color:#eee; }
+        .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+        .card { background:white; padding:16px 18px; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); }
+        body.dark .card { background:#2a2a2e; border-color:#3a3a3e; }
+        .card .label { font-size:13px; color:#888; }
+        body.dark .card .label { color:#aaa; }
+        .card .value { font-size:22px; font-weight:700; margin-top:4px; }
+        .status-ok { color:#2a9d8f; }
+        .status-no { color:#e76f51; }
+        .chart-container { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:20px; }
+        body.dark .chart-container { background:#2a2a2e; border-color:#3a3a3e; }
+        .history { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); }
+        body.dark .history { background:#2a2a2e; border-color:#3a3a3e; }
+        .history h3 { font-size:16px; margin-bottom:10px; color:#555; }
+        body.dark .history h3 { color:#aaa; }
+        .history ul { list-style:none; padding:0; max-height:180px; overflow-y:auto; font-size:14px; }
+        .history ul li { padding:4px 0; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; }
+        body.dark .history ul li { border-bottom-color:#3a3a3e; }
+        .history .time { color:#999; font-size:12px; }
+        .toast { position:fixed; bottom:30px; right:30px; background:#e76f51; color:#fff; padding:14px 24px; border-radius:60px; font-weight:600; box-shadow:0 8px 24px rgba(231,111,81,0.4); transform:translateY(100px); opacity:0; transition:0.4s ease; z-index:999; }
+        .toast.show { transform:translateY(0); opacity:1; }
+        @media (max-width:500px) { .cards { grid-template-columns:1fr 1fr; } .card .value { font-size:18px; } h1 { font-size:20px; } }
+        .footer { text-align:center; font-size:12px; color:#aaa; margin-top:20px; }
     </style>
 </head>
 <body>
@@ -249,6 +67,14 @@
 
     <div class="footer">🔄 Данные обновляются в реальном времени</div>
 
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js",
+                "firebase/database": "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js"
+            }
+        }
+    </script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
