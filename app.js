@@ -1,7 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
-
-// ===== КОНФИГ FIREBASE =====
+// ===== FIREBASE =====
 const firebaseConfig = {
     apiKey: "AIzaSyDMfmMhEyFUiQ8oIecbDkJfJxcYf9z00MM",
     authDomain: "smart-stand-7e599.firebaseapp.com",
@@ -12,8 +9,8 @@ const firebaseConfig = {
     appId: "1:600827325868:web:572b46cb91234c35ad1e09"
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 const dataPath = 'sensor_data';
 
 // ===== ЭЛЕМЕНТЫ =====
@@ -25,7 +22,7 @@ const batteryEl = document.getElementById("battery");
 const historyList = document.getElementById("historyList");
 const toast = document.getElementById("toast");
 
-// ===== ТЕМА (с сохранением в localStorage) =====
+// ===== ТЕМА =====
 const themeToggle = document.getElementById("themeToggle");
 
 function setTheme(dark) {
@@ -39,28 +36,38 @@ function setTheme(dark) {
     localStorage.setItem("theme", dark ? "dark" : "light");
 }
 
-// Загружаем сохранённую тему
 const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-    setTheme(true);
-} else {
-    setTheme(false);
-}
+setTheme(savedTheme === "dark");
 
 themeToggle.addEventListener("click", () => {
-    const isDark = document.body.classList.contains("dark");
-    setTheme(!isDark);
+    setTheme(!document.body.classList.contains("dark"));
 });
 
-// ===== ГРАФИК =====
+// ===== ГРАФИК С ДВУМЯ ОСЯМИ =====
 const ctx = document.getElementById('chart').getContext('2d');
 const chart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: [],
         datasets: [
-            { label: 'Вес (г)', data: [], borderColor: '#2a9d8f', backgroundColor: 'rgba(42,157,143,0.1)', fill: true, tension: 0.3 },
-            { label: 'Температура (°C)', data: [], borderColor: '#e76f51', backgroundColor: 'rgba(231,111,81,0.1)', fill: true, tension: 0.3 }
+            {
+                label: 'Вес (г)',
+                data: [],
+                borderColor: '#2a9d8f',
+                backgroundColor: 'rgba(42,157,143,0.1)',
+                fill: true,
+                tension: 0.3,
+                yAxisID: 'yWeight'  // ← привязываем к левой оси
+            },
+            {
+                label: 'Температура (°C)',
+                data: [],
+                borderColor: '#e76f51',
+                backgroundColor: 'rgba(231,111,81,0.1)',
+                fill: true,
+                tension: 0.3,
+                yAxisID: 'yTemp'   // ← привязываем к правой оси
+            }
         ]
     },
     options: {
@@ -69,7 +76,22 @@ const chart = new Chart(ctx, {
             legend: { position: 'top' }
         },
         scales: {
-            y: { beginAtZero: true }
+            yWeight: {
+                type: 'linear',
+                position: 'left',
+                beginAtZero: true,
+                title: { display: true, text: 'Вес (г)' },
+                grid: { color: 'rgba(42,157,143,0.2)' }
+            },
+            yTemp: {
+                type: 'linear',
+                position: 'right',
+                beginAtZero: true,
+                title: { display: true, text: 'Температура (°C)' },
+                grid: { drawOnChartArea: false },  // ← убираем сетку, чтобы не мешала
+                min: 0,
+                max: 50
+            }
         }
     }
 });
@@ -79,7 +101,6 @@ let history = [];
 const MAX_HISTORY = 20;
 let lastAlert = false;
 
-// ===== ЗВУК =====
 function playAlertSound() {
     try {
         const audio = new Audio("data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACBhYV/hH2EfoR+hoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaF");
@@ -87,15 +108,14 @@ function playAlertSound() {
     } catch (e) {}
 }
 
-// ===== УВЕДОМЛЕНИЕ =====
-function showToast(msg = "🔔 Тревога! Чай готов!") {
+function showToast(msg) {
     toast.textContent = msg;
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 5000);
 }
 
 // ===== ЧТЕНИЕ ДАННЫХ =====
-onValue(ref(database, dataPath), (snapshot) => {
+firebase.database().ref(dataPath).on('value', (snapshot) => {
     const data = snapshot.val();
     if (!data) return;
 
@@ -105,7 +125,6 @@ onValue(ref(database, dataPath), (snapshot) => {
     const timeLeft = data.timeLeft ?? 0;
     const battery = data.battery ?? 0;
 
-    // ----- Карточки -----
     tempEl.textContent = temp ? temp + " °C" : "—";
     weightEl.textContent = weight ? weight + " г" : "—";
     cupEl.textContent = cup ? "✅ Да" : "❌ Нет";
@@ -135,10 +154,9 @@ onValue(ref(database, dataPath), (snapshot) => {
         batteryEl.textContent = "—";
     }
 
-    // ----- История -----
     const now = new Date();
     const timeStr = now.toLocaleTimeString();
-    history.push({ time: timeStr, weight: weight, temp: temp, cup: cup });
+    history.push({ time: timeStr, weight, temp, cup });
     if (history.length > MAX_HISTORY) history.shift();
 
     historyList.innerHTML = history.slice().reverse().map(h =>
@@ -148,13 +166,12 @@ onValue(ref(database, dataPath), (snapshot) => {
         </li>`
     ).join('') || '<li style="color:#aaa;">Нет данных</li>';
 
-    // ----- График -----
+    // ===== ОБНОВЛЯЕМ ГРАФИК =====
     chart.data.labels = history.map(h => h.time);
     chart.data.datasets[0].data = history.map(h => h.weight);
     chart.data.datasets[1].data = history.map(h => h.temp);
     chart.update();
 
-    // ----- Уведомление (если кружка есть и осталось <= 5 сек) -----
     if (cup && timeLeft <= 5 && timeLeft > 0 && !lastAlert) {
         showToast("🔔 Чай скоро готов! Осталось " + timeLeft + " сек");
         playAlertSound();
