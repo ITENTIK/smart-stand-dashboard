@@ -66,7 +66,7 @@
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
             margin-bottom: 20px;
         }
@@ -175,7 +175,6 @@
             font-size: 12px;
         }
 
-        /* Уведомление */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -200,7 +199,6 @@
             opacity: 1;
         }
 
-        /* Адаптив */
         @media (max-width: 500px) {
             .cards {
                 grid-template-columns: 1fr 1fr;
