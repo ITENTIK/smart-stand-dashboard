@@ -25,6 +25,33 @@ const batteryEl = document.getElementById("battery");
 const historyList = document.getElementById("historyList");
 const toast = document.getElementById("toast");
 
+// ===== ТЕМА (с сохранением в localStorage) =====
+const themeToggle = document.getElementById("themeToggle");
+
+function setTheme(dark) {
+    if (dark) {
+        document.body.classList.add("dark");
+        themeToggle.textContent = "☀️ Светлая";
+    } else {
+        document.body.classList.remove("dark");
+        themeToggle.textContent = "🌙 Тёмная";
+    }
+    localStorage.setItem("theme", dark ? "dark" : "light");
+}
+
+// Загружаем сохранённую тему
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+    setTheme(true);
+} else {
+    setTheme(false);
+}
+
+themeToggle.addEventListener("click", () => {
+    const isDark = document.body.classList.contains("dark");
+    setTheme(!isDark);
+});
+
 // ===== ГРАФИК =====
 const ctx = document.getElementById('chart').getContext('2d');
 const chart = new Chart(ctx, {
@@ -52,17 +79,12 @@ let history = [];
 const MAX_HISTORY = 20;
 let lastAlert = false;
 
-// ===== ТЕМА =====
-const themeToggle = document.getElementById("themeToggle");
-themeToggle.addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-    themeToggle.textContent = document.body.classList.contains("dark") ? "☀️ Светлая" : "🌙 Тёмная";
-});
-
 // ===== ЗВУК =====
 function playAlertSound() {
-    const audio = new Audio("data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACBhYV/hH2EfoR+hoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaF");
-    audio.play().catch(() => {});
+    try {
+        const audio = new Audio("data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACBhYV/hH2EfoR+hoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaF");
+        audio.play();
+    } catch (e) {}
 }
 
 // ===== УВЕДОМЛЕНИЕ =====
@@ -124,7 +146,7 @@ onValue(ref(database, dataPath), (snapshot) => {
             <span>${h.weight} г, ${h.temp}°C ${h.cup ? '✅' : '❌'}</span>
             <span class="time">${h.time}</span>
         </li>`
-    ).join('');
+    ).join('') || '<li style="color:#aaa;">Нет данных</li>';
 
     // ----- График -----
     chart.data.labels = history.map(h => h.time);
@@ -132,8 +154,8 @@ onValue(ref(database, dataPath), (snapshot) => {
     chart.data.datasets[1].data = history.map(h => h.temp);
     chart.update();
 
-    // ----- Уведомление (если появилась кружка и время <= 5 сек) -----
-    if (cup && timeLeft <= 5 && !lastAlert) {
+    // ----- Уведомление (если кружка есть и осталось <= 5 сек) -----
+    if (cup && timeLeft <= 5 && timeLeft > 0 && !lastAlert) {
         showToast("🔔 Чай скоро готов! Осталось " + timeLeft + " сек");
         playAlertSound();
         lastAlert = true;
