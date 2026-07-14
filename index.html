@@ -7,12 +7,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; transition: background 0.3s, color 0.3s; }
-        body { font-family: 'Segoe UI', sans-serif; padding:20px; max-width:800px; margin:0 auto; background:#f5f5f5; color:#1f1a16; }
+        body { font-family: 'Segoe UI', sans-serif; padding:20px; max-width:900px; margin:0 auto; background:#f5f5f5; color:#1f1a16; }
         body.dark { background:#1a1a1e; color:#e0dcd8; }
+
         .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
         h1 { font-size:26px; font-weight:700; }
         .theme-toggle { background:#ddd; border:none; border-radius:40px; padding:8px 18px; font-size:16px; cursor:pointer; font-weight:600; }
         body.dark .theme-toggle { background:#333; color:#eee; }
+
         .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
         .card { background:white; padding:16px 18px; border-radius:20px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); }
         body.dark .card { background:#2a2a2e; border-color:#3a3a3e; }
@@ -21,8 +23,46 @@
         .card .value { font-size:22px; font-weight:700; margin-top:4px; }
         .status-ok { color:#2a9d8f; }
         .status-no { color:#e76f51; }
-        .chart-container { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:20px; }
+
+        .chart-container { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:15px; position:relative; }
         body.dark .chart-container { background:#2a2a2e; border-color:#3a3a3e; }
+
+        .chart-controls { display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px; }
+        .chart-controls button { background:#ddd; border:none; border-radius:20px; padding:6px 16px; font-size:13px; cursor:pointer; font-weight:600; }
+        body.dark .chart-controls button { background:#3a3a3e; color:#eee; }
+        .chart-controls button.active { background:#2a9d8f; color:white; }
+
+        .chart-grid { display:grid; gap:15px; }
+        .chart-grid.one { grid-template-columns:1fr; }
+        .chart-grid.two { grid-template-columns:1fr 1fr; }
+        .chart-grid .chart-box { min-height:200px; }
+
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .notifications {
+            background: #e8e8e8;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-left: 6px solid #aaa;
+            transition: background 0.5s, border-color 0.5s;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        body.dark .notifications { background: #2a2a2e; border-left-color: #555; }
+        .notifications.alarm {
+            background: #ffebee;
+            border-left-color: #e76f51;
+            animation: blink-bg 0.8s infinite alternate;
+        }
+        body.dark .notifications.alarm { background: #3d1a1a; border-left-color: #e76f51; }
+        @keyframes blink-bg {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .notifications .msg { font-size: 16px; font-weight:500; }
+        .notifications .msg .highlight { color:#e76f51; font-weight:700; }
+
         .history { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); }
         body.dark .history { background:#2a2a2e; border-color:#3a3a3e; }
         .history h3 { font-size:16px; margin-bottom:10px; color:#555; }
@@ -31,9 +71,11 @@
         .history ul li { padding:4px 0; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; }
         body.dark .history ul li { border-bottom-color:#3a3a3e; }
         .history .time { color:#999; font-size:12px; }
+
         .toast { position:fixed; bottom:30px; right:30px; background:#e76f51; color:#fff; padding:14px 24px; border-radius:60px; font-weight:600; box-shadow:0 8px 24px rgba(231,111,81,0.4); transform:translateY(100px); opacity:0; transition:0.4s ease; z-index:999; }
         .toast.show { transform:translateY(0); opacity:1; }
-        @media (max-width:500px) { .cards { grid-template-columns:1fr 1fr; } .card .value { font-size:18px; } h1 { font-size:20px; } }
+
+        @media (max-width:600px) { .chart-grid.two { grid-template-columns:1fr; } }
         .footer { text-align:center; font-size:12px; color:#aaa; margin-top:20px; }
     </style>
 </head>
@@ -52,8 +94,22 @@
         <div class="card"><div class="label">🔋 Батарея</div><div class="value" id="battery">—</div></div>
     </div>
 
+    <!-- ===== УВЕДОМЛЕНИЯ ===== -->
+    <div class="notifications" id="notifBox">
+        <div class="msg" id="notifMsg">📌 Ожидание... поставьте кружку</div>
+    </div>
+
+    <!-- ===== ГРАФИКИ ===== -->
     <div class="chart-container">
-        <canvas id="chart"></canvas>
+        <div class="chart-controls">
+            <button id="viewOne" class="active">📊 Один график</button>
+            <button id="viewTwo">📈 Два графика</button>
+        </div>
+        <div class="chart-grid one" id="chartGrid">
+            <div class="chart-box"><canvas id="chartCombined"></canvas></div>
+            <div class="chart-box" style="display:none;"><canvas id="chartTemp"></canvas></div>
+            <div class="chart-box" style="display:none;"><canvas id="chartWeight"></canvas></div>
+        </div>
     </div>
 
     <div class="history">
@@ -64,7 +120,6 @@
     </div>
 
     <div class="toast" id="toast">🔔 Тревога! Чай готов!</div>
-
     <div class="footer">🔄 Данные обновляются в реальном времени</div>
 
     <script type="importmap">
