@@ -87,7 +87,11 @@ function setView(mode) {
         viewTwo.classList.remove('active');
     } else {
         grid.className = 'chart-grid two';
-        boxes.forEach(el => el.style.display = '');
+        // Показываем ТОЛЬКО два холста: температура (индекс 1) и вес (индекс 2)
+        boxes.forEach((el, i) => {
+            if (i === 1 || i === 2) el.style.display = '';
+            else el.style.display = 'none';
+        });
         viewTwo.classList.add('active');
         viewOne.classList.remove('active');
     }
@@ -103,18 +107,13 @@ let lastAlert = false;
 
 function updateNotification(cup, timeLeft, temp) {
     if (cup) {
-        // === ТРЕВОГА (осталось <= 5 сек) ===
         if (timeLeft <= 5 && timeLeft > 0) {
             notifMsg.innerHTML = `⏰ <span class="highlight">СКОРО ОСТЫНЕТ! Осталось ${timeLeft} сек</span>`;
             notifBox.className = 'notifications alarm';
-        } 
-        // === ТАЙМЕР ИДЁТ ===
-        else if (timeLeft > 5) {
+        } else if (timeLeft > 5) {
             notifMsg.innerHTML = `☕ Напиток на месте. Температура: ${temp}°C. Осталось ${timeLeft} сек.`;
             notifBox.className = 'notifications';
-        } 
-        // === КРУЖКА ЕСТЬ, НО ТАЙМЕР НЕ АКТИВЕН ===
-        else {
+        } else {
             notifMsg.innerHTML = `☕ Напиток на месте. Температура: ${temp}°C.`;
             notifBox.className = 'notifications';
         }
@@ -192,9 +191,7 @@ onValue(ref(database, dataPath), (snapshot) => {
     chartWeight.data.datasets[0].data = weightData;
     chartWeight.update();
 
-    // ===== ТОЛЬКО УВЕДОМЛЕНИЕ В ЦЕНТРЕ (БЕЗ TOAST) =====
     if (cup && timeLeft <= 5 && timeLeft > 0 && !lastAlert) {
-        // Уведомление уже мигает в центре, ничего дополнительно не делаем
         lastAlert = true;
     }
     if (!cup) lastAlert = false;
