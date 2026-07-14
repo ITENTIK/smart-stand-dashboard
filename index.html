@@ -24,20 +24,7 @@
         .status-ok { color:#2a9d8f; }
         .status-no { color:#e76f51; }
 
-        .chart-container { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:15px; position:relative; }
-        body.dark .chart-container { background:#2a2a2e; border-color:#3a3a3e; }
-
-        .chart-controls { display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px; }
-        .chart-controls button { background:#ddd; border:none; border-radius:20px; padding:6px 16px; font-size:13px; cursor:pointer; font-weight:600; }
-        body.dark .chart-controls button { background:#3a3a3e; color:#eee; }
-        .chart-controls button.active { background:#2a9d8f; color:white; }
-
-        .chart-grid { display:grid; gap:15px; }
-        .chart-grid.one { grid-template-columns:1fr; }
-        .chart-grid.two { grid-template-columns:1fr 1fr; }
-        .chart-grid .chart-box { min-height:200px; }
-
-        /* ===== УВЕДОМЛЕНИЯ ===== */
+        /* ===== УВЕДОМЛЕНИЯ (МИГАЮТ ПРИ ТРЕВОГЕ) ===== */
         .notifications {
             background: #e8e8e8;
             border-radius: 20px;
@@ -51,17 +38,32 @@
         }
         body.dark .notifications { background: #2a2a2e; border-left-color: #555; }
         .notifications.alarm {
-            background: #ffebee;
-            border-left-color: #e76f51;
+            background: #ffebee !important;
+            border-left-color: #e76f51 !important;
             animation: blink-bg 0.8s infinite alternate;
         }
-        body.dark .notifications.alarm { background: #3d1a1a; border-left-color: #e76f51; }
-        @keyframes blink-bg {
-            0% { opacity: 0.7; }
-            100% { opacity: 1; }
+        body.dark .notifications.alarm {
+            background: #4a1a1a !important;
+            border-left-color: #ff6b4a !important;
         }
-        .notifications .msg { font-size: 16px; font-weight:500; }
+        @keyframes blink-bg {
+            0% { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.01); }
+        }
+        .notifications .msg { font-size: 17px; font-weight:500; }
         .notifications .msg .highlight { color:#e76f51; font-weight:700; }
+
+        .chart-container { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); margin-bottom:15px; }
+        body.dark .chart-container { background:#2a2a2e; border-color:#3a3a3e; }
+        .chart-controls { display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px; }
+        .chart-controls button { background:#ddd; border:none; border-radius:20px; padding:6px 16px; font-size:13px; cursor:pointer; font-weight:600; }
+        body.dark .chart-controls button { background:#3a3a3e; color:#eee; }
+        .chart-controls button.active { background:#2a9d8f; color:white; }
+
+        .chart-grid { display:grid; gap:15px; }
+        .chart-grid.one { grid-template-columns:1fr; }
+        .chart-grid.two { grid-template-columns:1fr 1fr; }
+        .chart-grid .chart-box { min-height:200px; }
 
         .history { background:white; border-radius:20px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); }
         body.dark .history { background:#2a2a2e; border-color:#3a3a3e; }
@@ -71,9 +73,6 @@
         .history ul li { padding:4px 0; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; }
         body.dark .history ul li { border-bottom-color:#3a3a3e; }
         .history .time { color:#999; font-size:12px; }
-
-        .toast { position:fixed; bottom:30px; right:30px; background:#e76f51; color:#fff; padding:14px 24px; border-radius:60px; font-weight:600; box-shadow:0 8px 24px rgba(231,111,81,0.4); transform:translateY(100px); opacity:0; transition:0.4s ease; z-index:999; }
-        .toast.show { transform:translateY(0); opacity:1; }
 
         @media (max-width:600px) { .chart-grid.two { grid-template-columns:1fr; } }
         .footer { text-align:center; font-size:12px; color:#aaa; margin-top:20px; }
@@ -119,7 +118,6 @@
         </ul>
     </div>
 
-    <div class="toast" id="toast">🔔 Тревога! Чай готов!</div>
     <div class="footer">🔄 Данные обновляются в реальном времени</div>
 
     <script type="importmap">
