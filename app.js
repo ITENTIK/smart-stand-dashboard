@@ -74,24 +74,25 @@ const chartWeight = new Chart(ctxWeight, {
 });
 
 // ===== ПЕРЕКЛЮЧЕНИЕ ГРАФИКОВ =====
-const grid = document.getElementById('chartGrid');
+const boxCombined = document.getElementById('boxCombined');
+const boxTemp = document.getElementById('boxTemp');
+const boxWeight = document.getElementById('boxWeight');
 const viewOne = document.getElementById('viewOne');
 const viewTwo = document.getElementById('viewTwo');
 
 function setView(mode) {
-    const boxes = grid.querySelectorAll('.chart-box');
     if (mode === 'one') {
-        grid.className = 'chart-grid one';
-        boxes.forEach((el, i) => el.style.display = i === 0 ? '' : 'none');
+        document.getElementById('chartGrid').className = 'chart-grid one';
+        boxCombined.style.display = '';
+        boxTemp.style.display = 'none';
+        boxWeight.style.display = 'none';
         viewOne.classList.add('active');
         viewTwo.classList.remove('active');
     } else {
-        grid.className = 'chart-grid two';
-        // Показываем ТОЛЬКО два холста: температура (индекс 1) и вес (индекс 2)
-        boxes.forEach((el, i) => {
-            if (i === 1 || i === 2) el.style.display = '';
-            else el.style.display = 'none';
-        });
+        document.getElementById('chartGrid').className = 'chart-grid two';
+        boxCombined.style.display = 'none';
+        boxTemp.style.display = '';
+        boxWeight.style.display = '';
         viewTwo.classList.add('active');
         viewOne.classList.remove('active');
     }
@@ -135,7 +136,8 @@ onValue(ref(database, dataPath), (snapshot) => {
     const battery = data.battery ?? 0;
 
     tempEl.textContent = temp ? temp + " °C" : "—";
-    weightEl.textContent = weight ? weight + " г" : "—";
+    // ===== ОКРУГЛЕНИЕ ВЕСА ДО ЦЕЛЫХ =====
+    weightEl.textContent = weight ? Math.round(weight) + " г" : "—";
     cupEl.textContent = cup ? "✅ Да" : "❌ Нет";
     cupEl.className = "value " + (cup ? "status-ok" : "status-no");
 
@@ -171,7 +173,7 @@ onValue(ref(database, dataPath), (snapshot) => {
     if (history.length > MAX_HISTORY) history.shift();
 
     historyList.innerHTML = history.slice().reverse().map(h =>
-        `<li><span>${h.weight} г, ${h.temp}°C ${h.cup ? '✅' : '❌'}</span><span class="time">${h.time}</span></li>`
+        `<li><span>${Math.round(h.weight)} г, ${h.temp}°C ${h.cup ? '✅' : '❌'}</span><span class="time">${h.time}</span></li>`
     ).join('') || '<li style="color:#aaa;">Нет данных</li>';
 
     const labels = history.map(h => h.time);
