@@ -6,16 +6,17 @@
     <title>☕ Умная подставка</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Базовые стили */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background 0.3s, color 0.3s;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
         }
         body {
             font-family: 'Segoe UI', sans-serif;
-            padding: 20px;
-            max-width: 900px;
+            padding: 16px;
+            max-width: 1000px;
             margin: 0 auto;
             background: #f5f5f5;
             color: #1f1a16;
@@ -29,20 +30,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
         h1 {
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 700;
         }
         .theme-toggle {
             background: #ddd;
             border: none;
-            border-radius: 40px;
-            padding: 8px 18px;
-            font-size: 16px;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 14px;
             cursor: pointer;
             font-weight: 600;
         }
@@ -51,17 +52,18 @@
             color: #eee;
         }
 
+        /* Карточки */
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
         }
         .card {
             background: white;
-            padding: 16px 18px;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            padding: 12px 14px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             border: 1px solid rgba(0, 0, 0, 0.04);
         }
         body.dark .card {
@@ -69,16 +71,16 @@
             border-color: #3a3a3e;
         }
         .card .label {
-            font-size: 13px;
+            font-size: 12px;
             color: #888;
         }
         body.dark .card .label {
             color: #aaa;
         }
         .card .value {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
-            margin-top: 4px;
+            margin-top: 2px;
         }
         .status-ok {
             color: #2a9d8f;
@@ -87,14 +89,15 @@
             color: #e76f51;
         }
 
+        /* Блок уведомлений (перенесён под карточки) */
         .notifications {
             background: #e8e8e8;
-            border-radius: 20px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            border-left: 6px solid #aaa;
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            border-left: 5px solid #aaa;
             transition: background 0.5s, border-color 0.5s;
-            min-height: 60px;
+            min-height: 50px;
             display: flex;
             align-items: center;
         }
@@ -122,7 +125,7 @@
             }
         }
         .notifications .msg {
-            font-size: 17px;
+            font-size: 15px;
             font-weight: 500;
         }
         .notifications .msg .highlight {
@@ -130,13 +133,14 @@
             font-weight: 700;
         }
 
+        /* График */
         .chart-container {
             background: white;
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             border: 1px solid rgba(0, 0, 0, 0.04);
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         body.dark .chart-container {
             background: #2a2a2e;
@@ -145,15 +149,15 @@
         .chart-controls {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
         .chart-controls button {
             background: #ddd;
             border: none;
-            border-radius: 20px;
-            padding: 6px 16px;
-            font-size: 13px;
+            border-radius: 16px;
+            padding: 4px 14px;
+            font-size: 12px;
             cursor: pointer;
             font-weight: 600;
         }
@@ -166,9 +170,10 @@
             color: white;
         }
 
+        /* Сетка графиков — мобильная версия крупнее */
         .chart-grid {
             display: grid;
-            gap: 15px;
+            gap: 12px;
         }
         .chart-grid.one {
             grid-template-columns: 1fr;
@@ -177,19 +182,30 @@
             grid-template-columns: 1fr 1fr;
         }
         .chart-grid .chart-box {
-            min-height: 200px;
+            min-height: 240px;
         }
+        /* На мобильных делаем графики высокими */
         @media (max-width: 600px) {
             .chart-grid.two {
                 grid-template-columns: 1fr;
             }
+            .chart-grid .chart-box {
+                min-height: 280px;
+            }
+            .cards {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .card .value {
+                font-size: 16px;
+            }
         }
 
+        /* История */
         .history {
             background: white;
-            border-radius: 20px;
-            padding: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             border: 1px solid rgba(0, 0, 0, 0.04);
         }
         body.dark .history {
@@ -197,8 +213,8 @@
             border-color: #3a3a3e;
         }
         .history h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 8px;
             color: #555;
         }
         body.dark .history h3 {
@@ -207,9 +223,9 @@
         .history ul {
             list-style: none;
             padding: 0;
-            max-height: 180px;
+            max-height: 160px;
             overflow-y: auto;
-            font-size: 14px;
+            font-size: 13px;
         }
         .history ul li {
             padding: 4px 0;
@@ -222,14 +238,14 @@
         }
         .history .time {
             color: #999;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .footer {
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             color: #aaa;
-            margin-top: 20px;
+            margin-top: 16px;
         }
     </style>
 </head>
@@ -241,36 +257,22 @@
     </div>
 
     <div class="cards">
-        <div class="card">
-            <div class="label">🌡️ Температура</div>
-            <div class="value" id="temp">—</div>
-        </div>
-        <div class="card">
-            <div class="label">⚖️ Вес</div>
-            <div class="value" id="weight">—</div>
-        </div>
-        <div class="card">
-            <div class="label">🍵 Кружка</div>
-            <div class="value" id="cup">—</div>
-        </div>
-        <div class="card">
-            <div class="label">⏱️ Осталось</div>
-            <div class="value" id="timeLeft">—</div>
-        </div>
-        <div class="card">
-            <div class="label">🔋 Батарея</div>
-            <div class="value" id="battery">—</div>
-        </div>
+        <div class="card"><div class="label">🌡️ Температура</div><div class="value" id="temp">—</div></div>
+        <div class="card"><div class="label">⚖️ Вес</div><div class="value" id="weight">—</div></div>
+        <div class="card"><div class="label">🍵 Кружка</div><div class="value" id="cup">—</div></div>
+        <div class="card"><div class="label">⏱️ Осталось</div><div class="value" id="timeLeft">—</div></div>
+        <div class="card"><div class="label">🔋 Батарея</div><div class="value" id="battery">—</div></div>
     </div>
 
+    <!-- Блок уведомлений ПОД КАРТОЧКАМИ (на мобилке виден сразу) -->
     <div class="notifications" id="notifBox">
         <div class="msg" id="notifMsg">📌 Ожидание... поставьте кружку</div>
     </div>
 
     <div class="chart-container">
         <div class="chart-controls">
-            <button id="viewOne" class="active">📊 Один график</button>
-            <button id="viewTwo">📈 Два графика</button>
+            <button id="viewOne" class="active">📊 Один</button>
+            <button id="viewTwo">📈 Два</button>
         </div>
         <div class="chart-grid one" id="chartGrid">
             <div class="chart-box" id="boxCombined"><canvas id="chartCombined"></canvas></div>
