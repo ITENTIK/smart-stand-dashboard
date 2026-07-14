@@ -16,10 +16,6 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const dataPath = 'sensor_data';
 
-function map(value, low1, high1, low2, high2) {
-    return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
-}
-
 // ===== ЭЛЕМЕНТЫ =====
 const tempEl = document.getElementById("temp");
 const weightEl = document.getElementById("weight");
@@ -27,7 +23,6 @@ const cupEl = document.getElementById("cup");
 const timeEl = document.getElementById("timeLeft");
 const batteryEl = document.getElementById("battery");
 const historyList = document.getElementById("historyList");
-const toast = document.getElementById("toast");
 const notifBox = document.getElementById("notifBox");
 const notifMsg = document.getElementById("notifMsg");
 
@@ -106,25 +101,20 @@ let history = [];
 const MAX_HISTORY = 20;
 let lastAlert = false;
 
-function playAlertSound() {
-    try { new Audio("data:audio/wav;base64,UklGRlwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACBhYV/hH2EfoR+hoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaFhoeFhYaF").play(); } catch(e) {}
-}
-
-function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 5000);
-}
-
 function updateNotification(cup, timeLeft, temp) {
     if (cup) {
+        // === ТРЕВОГА (осталось <= 5 сек) ===
         if (timeLeft <= 5 && timeLeft > 0) {
-            notifMsg.innerHTML = `⏰ <span class="highlight">Скоро остынет! Осталось ${timeLeft} сек</span>`;
+            notifMsg.innerHTML = `⏰ <span class="highlight">СКОРО ОСТЫНЕТ! Осталось ${timeLeft} сек</span>`;
             notifBox.className = 'notifications alarm';
-        } else if (timeLeft > 5) {
-            notifMsg.innerHTML = `☕ Напиток на месте. Температура: ${temp}°C. Ожидание...`;
+        } 
+        // === ТАЙМЕР ИДЁТ ===
+        else if (timeLeft > 5) {
+            notifMsg.innerHTML = `☕ Напиток на месте. Температура: ${temp}°C. Осталось ${timeLeft} сек.`;
             notifBox.className = 'notifications';
-        } else {
+        } 
+        // === КРУЖКА ЕСТЬ, НО ТАЙМЕР НЕ АКТИВЕН ===
+        else {
             notifMsg.innerHTML = `☕ Напиток на месте. Температура: ${temp}°C.`;
             notifBox.className = 'notifications';
         }
@@ -150,15 +140,13 @@ onValue(ref(database, dataPath), (snapshot) => {
     cupEl.textContent = cup ? "✅ Да" : "❌ Нет";
     cupEl.className = "value " + (cup ? "status-ok" : "status-no");
 
-    let invertedTime = 0;
     if (timeLeft > 0) {
-        invertedTime = Math.round(map(timeLeft, 30, 600, 600, 30));
-        if (invertedTime > 60) {
-            const m = Math.floor(invertedTime / 60);
-            const s = invertedTime % 60;
+        if (timeLeft > 60) {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
             timeEl.textContent = m + " мин " + s + " сек";
         } else {
-            timeEl.textContent = invertedTime + " сек";
+            timeEl.textContent = timeLeft + " сек";
         }
     } else {
         timeEl.textContent = "—";
@@ -176,10 +164,8 @@ onValue(ref(database, dataPath), (snapshot) => {
         batteryEl.textContent = "—";
     }
 
-    // Уведомления
-    updateNotification(cup, invertedTime, temp);
+    updateNotification(cup, timeLeft, temp);
 
-    // История
     const now = new Date();
     const timeStr = now.toLocaleTimeString();
     history.push({ time: timeStr, weight, temp, cup });
@@ -189,7 +175,6 @@ onValue(ref(database, dataPath), (snapshot) => {
         `<li><span>${h.weight} г, ${h.temp}°C ${h.cup ? '✅' : '❌'}</span><span class="time">${h.time}</span></li>`
     ).join('') || '<li style="color:#aaa;">Нет данных</li>';
 
-    // Графики
     const labels = history.map(h => h.time);
     const weightData = history.map(h => h.weight);
     const tempData = history.map(h => h.temp);
@@ -207,9 +192,9 @@ onValue(ref(database, dataPath), (snapshot) => {
     chartWeight.data.datasets[0].data = weightData;
     chartWeight.update();
 
+    // ===== ТОЛЬКО УВЕДОМЛЕНИЕ В ЦЕНТРЕ (БЕЗ TOAST) =====
     if (cup && timeLeft <= 5 && timeLeft > 0 && !lastAlert) {
-        showToast("🔔 Чай скоро готов! Осталось " + timeLeft + " сек");
-        playAlertSound();
+        // Уведомление уже мигает в центре, ничего дополнительно не делаем
         lastAlert = true;
     }
     if (!cup) lastAlert = false;
